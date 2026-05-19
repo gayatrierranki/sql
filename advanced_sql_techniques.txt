@@ -1,0 +1,20 @@
+when we query a database, to minimize data stress duw to heavy querying the db, we have to align with some 5 techniques:
+
+firstly, we will have client and server side
+
+users querying are client side and database on server side
+
+database server contains 3 parts - 
+
+1. database engine (brain of database to perform all operations on the database)
+
+2. disk storage - this has 3 parts again - user data storage(actual data) , catalog ( store metadata of data like columns info ), temporary data
+
+to access the user data, we can go and see our tables  using select query
+
+catalog (internal storage of db) we can check using information_schema ex: select * from information_schema.columns
+
+temporary tables - where temp tables are stored
+
+3. cache - data stored temporarily , very fast - data is stored for short period
+
