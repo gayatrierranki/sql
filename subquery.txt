@@ -1,0 +1,91 @@
+subquery - query inside a main query
+
+result types of subquery:
+=========================================================================================
+
+scalar - ( only one value as output , mostly an aggregated value )
+
+row query - one column multiple rows
+
+table query - multiple rows and multiple columns
+
+-- subquery gets executed first and intermediate result stored in cache, main query now read from cache and display results  to client
+
+how  to use:
+
+--Subquery in from clause
+=========================================================================================
+
+ex: select *, RANK() OVER ( ORDER BY TotalSales DESC) CustomerRank FROM
+
+( select customerid, SUM(Sales) TotalSales From Sales.Orders group by customerid )t
+
+
+-- Subquery in select clause / should have only one value like aggregated value
+=========================================================================================
+
+
+select productid, (select count(*) from sales.orders) totalorders from sales.orders
+
+-- Subquery in join clause
+=========================================================================================
+
+
+--q ) show all customer details and find the total orders of each customer
+
+
+select * from customers c left join
+
+(select customerid,count(*) from orders group by customerid) o on c.customerid=o.customerid
+
+--Subquery in where clause
+=========================================================================================
+
+--comparison operators >/</<>/!=/
+--logical operators IN/ANY/ALL/EXISTS
+
+select productid, Price from sales.product where Price > ( select avg(price) from sales.products)
+
+select * from Sales.orders where customerid IN ( select customerID from Sales.Customers where country = 'GERMANY';
+
+select * from Sales.orders where customerid NOT IN ( select customerID from Sales.Customers where country = 'GERMANY';
+
+--find female employees where salaries are greater than the salaries of any male employees
+
+select employeeid,firstname,lastname,salary from employees where gender = 'F' and salary > ANY( select salary from emplyees where gender='M')
+ 
+--find female employees where salaries are greater than the salaries of ALL male employees
+
+select employeeid,firstname,lastname,salary from employees where gender = 'F' and salary > ALL ( select salary from emplyees where gender='M')
+ =========================================================================================
+ 
+ 
+types of subquery: 
+=========================================================================================
+ 
+correlated subquery - a sub query that relays on values from main query 
+non-correlated subquery - a subquery that can run independently from the main query , all the above are examples of non correlated sub query , executed only once
+
+correlated subquery: (lead to bad performance as it gets executed multiple times)
+=========================================================================================
+db -->
+--> main query --> pass values to subquery 
+--> sub query gets executed for every row of main query
+ 
+ 
+example:
+show all customer details and find the total orders of each customer
+ 
+ 
+select * ,( select count(*) from from orders where o.customerid=c.customerid) totalsales from customers c;
+ 
+EXISTS() can be an example for correlated sub query  
+ 
+select * from orders o where EXISTS( select  1 from customers c where country = 'germany' and o.customerid=c.customerid)
+ 
+NOT EXISTS
+ 
+select * from orders o where NOT EXISTS( select  1 from customers c where country = 'germany' and o.customerid=c.customerid)
+
+
+
