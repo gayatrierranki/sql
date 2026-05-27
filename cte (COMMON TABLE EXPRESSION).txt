@@ -1,0 +1,141 @@
+cte (COMMON TABLE EXPRESSION)
+=============================
+
+main query can use cte query many number of times unlike a subquery 
+it is a virtual table, so wont be written to db disk , its stored in temp cache
+
+
+syntax : 
+----------
+with cte_name as (select ..) 
+(select ... from cte_name)
+
+multiple cte syntax:
+
+with cte_name_1 as ( select ..) 
+, cte_name_2 as ( select ..)
+main query
+
+note:
+------
+using multiple ctes == increases modularity/readability and reusability , but caution is avoid using more than 5 ctes as a best practice at a time 
+
+because of using huge ctes it will be very difficult to analyse the query result 
+
+cte types:
+----------
+
+1. non-recursive cte --> standalone cte( single cte which is indepedent to execute) , nested cte ( multiple cte , cte inside cte , dependent to execute
+2. recursive cte --> used for recursion calls ( self cte call with a conditional break statement to avoid infinite looping)
+
+once cte is executed , intermediate result will be stored in cache and main query uses it
+
+ex:
+
+standalone cte:
+===============
+find the total sales per customer :
+
+with cte_total_sales as
+( select customerid,sum(sales) as totalsales from orders group by customerid ) 
+
+select a.customerid, a.name,a.age,b.totalsales from customers a left join cte_total_sales b on  a.customerid=b.customerid;
+
+Note: 
+
+******CTE-RULE*******we cannot use order by directly in cte*********
+
+multiple standalone cte:
+========================
+
+
+with cte_total_sales as
+( select customerid,sum(sales) as totalsales from orders group by customerid ) 
+, cte_last_order as 
+(select customerid,max(order_date) as last_order lastfrom orders group by customerid)
+
+
+select a.customerid,a.name,a.age,b.totalsales,c.last_order from customers a left join cte_total_sales b on  a.customerid=b.customerid 
+left join 
+cte_last_order c on a.customerid=c.customerid;
+
+
+nested ctes syntax:
+==================
+with cte_name_1 as (select ..) 
+, cte_name_2 as ( select ... from cte_name_1) 
+mainquery
+
+**********BEST PRACTICE***** rethink and refactor your ctes before creating new one i.e., combine 2 to 3 ctes whenever possible before starting a new cte************
+
+recursive ctes syntax:
+======================
+with cte_name as 
+
+(select ... )=========> anchor query
+
+UNION ALL
+
+(select .... from cte_name where [BREAK CONDITION to end the loop] ) =============> recursive query 
+
+
+
+Here anchor query places first entry for the loop to start , 
+
+recursive query starts looping after first entry till n , until the loop condition breaks
+
+
+ex for recursive cte:
+---------------------------
+
+print series of numbers from 1 to 100:
+----------------------------------------
+
+WITH series AS (
+
+select 1 as mynumber 
+
+union all
+
+select mynumber+1 from series where mynumber<100
+
+)
+
+select * from series;
+
+Note:
+=========
+
+sometimes there will be db restriction for recursive looping , it may restrict till 100 loopings for recursion 
+
+we can change it by explicitly mentioning the recursions count as "OPTION (MAXRECURSION 10)" in main query 
+
+select * from series OPTION (MAXRECURSION 10);  ===> so it will add next recursive call after 10 loops and throws error 
+
+
+ex: -- task: show the employee hierarchy by displaying each employee level within organization 
+
+
+steps:
+
+identify ceo -- where there wont be any top level after him , i..e., manager id column will  be null -- > this serves as anchor query
+
+identify remaining all other employees where manager id is not null and get their levels 
+
+how to get levels -- level 1 is ceo , from level2 , ceo would be the managerid and so on 
+
+with hierarchy_cte as 
+
+( select employeeid,1 as level from organization where managerid is null )
+
+union all
+
+( select a.employeedid , b.level+1 from employees a inner join hierarchy_cte b on a.managerid= b.employeeid)  
+
+
+select * from hierarchy_cte; ===== main query 
+
+
+
+
+
