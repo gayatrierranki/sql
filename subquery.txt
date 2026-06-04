@@ -34,9 +34,9 @@ select productid, (select count(*) from sales.orders) totalorders from sales.ord
 --q ) show all customer details and find the total orders of each customer
 
 
-select * from customers c left join
+select c.*,o.totalorders from customers c left join
 
-(select customerid,count(*) from orders group by customerid) o on c.customerid=o.customerid
+(select customerid,count(*) AS totalorders from orders group by customerid) o on c.customerid=o.customerid
 
 --Subquery in where clause
 =========================================================================================
@@ -46,9 +46,9 @@ select * from customers c left join
 
 select productid, Price from sales.product where Price > ( select avg(price) from sales.products)
 
-select * from Sales.orders where customerid IN ( select customerID from Sales.Customers where country = 'GERMANY';
+select * from Sales.orders where customerid IN ( select customerID from Sales.Customers where country = 'GERMANY');
 
-select * from Sales.orders where customerid NOT IN ( select customerID from Sales.Customers where country = 'GERMANY';
+select * from Sales.orders where customerid NOT IN ( select customerID from Sales.Customers where country = 'GERMANY');
 
 --find female employees where salaries are greater than the salaries of any male employees
 
