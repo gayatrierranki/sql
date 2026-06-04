@@ -126,7 +126,7 @@ how to get levels -- level 1 is ceo , from level2 , ceo would be the managerid a
 
 with hierarchy_cte as 
 
-( select employeeid,1 as level from organization where managerid is null )
+( select employeeid,1 as level from employees where managerid is null )
 
 union all
 
